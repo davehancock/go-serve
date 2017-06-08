@@ -18,4 +18,5 @@ fabric.properties
 build
 *.tfstate
 *.tfstate.backup
+*.terraform.tfstate.lock.info
 .terraform/

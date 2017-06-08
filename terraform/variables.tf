@@ -10,15 +10,14 @@ variable "ec2_region" {
 variable "amis" {
   type = "map"
   default = {
-    // EU West-1 CoreOS Alpha HVM Image
-    eu-west-1 = "ami-f44f1592"
-    eu-west-1a = "ami-f44f1592"
-    eu-west-1b = "ami-f44f1592"
-    eu-west-1c = "ami-f44f1592"
+    // EU West-1 ECS Optimizied AMI
+    eu-west-1 = "ami-a1e6f5c7"
+    eu-west-1a = "ami-a1e6f5c7"
+    eu-west-1b = "ami-a1e6f5c7"
+    eu-west-1c = "ami-a1e6f5c7"
   }
 }
 
-// TODO Use OTF keys
 variable "key_name" {
   default = "dave-aws"
 }
