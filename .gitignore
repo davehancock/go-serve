@@ -28,7 +28,6 @@ fabric.properties
 *.out
 .glide/
 build
-/.gitignore
 *.tfstate
 *.tfstate.backup
 .terraform/
