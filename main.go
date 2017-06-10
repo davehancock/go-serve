@@ -6,7 +6,6 @@ import (
 	"fmt"
 )
 
-const address = "localhost:"
 const port = ":8085"
 const version = "1.0"
 
@@ -20,7 +19,9 @@ func main() {
 
 func handleStuff(w http.ResponseWriter, r *http.Request) {
 
-	var content = "Current version is: " + version + ", App Env: " + os.Getenv("SERVE_ENV")
+	var content = "Current version is: " + version + ", " +
+		"App Env: " + os.Getenv("SERVE_ENV") + ", " +
+		"Running on host: " + os.Getenv("HOSTNAME")
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(content))

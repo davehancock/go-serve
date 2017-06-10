@@ -40,6 +40,15 @@ resource "aws_security_group" "elb" {
       "0.0.0.0/0"]
   }
 
+  // TODO App Specific
+  ingress {
+    from_port = 8085
+    to_port = 8085
+    protocol = "tcp"
+    cidr_blocks = [
+      "0.0.0.0/0"]
+  }
+
   ingress {
     from_port = 443
     to_port = 443
@@ -91,6 +100,15 @@ resource "aws_security_group" "ec2_default" {
       "10.0.0.0/16"]
   }
 
+  // TODO App Specific
+  ingress {
+    from_port = 8085
+    to_port = 8085
+    protocol = "tcp"
+    cidr_blocks = [
+      "0.0.0.0/0"]
+  }
+
   ingress {
     from_port = 443
     to_port = 443
@@ -126,6 +144,14 @@ resource "aws_elb" "elb_main" {
     instance_port = 80
     instance_protocol = "tcp"
     lb_port = 80
+    lb_protocol = "tcp"
+  }
+
+  // TODO App Specific
+  listener {
+    instance_port = 8085
+    instance_protocol = "tcp"
+    lb_port = 8085
     lb_protocol = "tcp"
   }
 

@@ -22,14 +22,14 @@ variable "key_name" {
   default = "dave-aws"
 }
 
-variable "hosted_zone_id" {
-  default = "Z191JAX47C5HSH"
-}
-
 variable "node_size" {
-  default = "t2.small"
+  default = "t2.nano"
 }
 
 variable "nodes" {
   default = 3
+}
+
+variable "cluster_name" {
+  default = "test-cluster"
 }

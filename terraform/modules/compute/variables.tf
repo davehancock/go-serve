@@ -22,3 +22,6 @@ variable "node_size" {
 
 variable "nodes" {
 }
+
+variable "cluster_name" {
+}

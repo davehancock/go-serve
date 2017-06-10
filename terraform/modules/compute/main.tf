@@ -1,8 +1,6 @@
-// TODO Extract some values out of here
 resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "test-ecs-cluster"
+  name = "${var.cluster_name}"
 }
-
 
 // http://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_container_instance.html
 resource "aws_instance" "ecs_node" {
@@ -14,7 +12,7 @@ resource "aws_instance" "ecs_node" {
   vpc_security_group_ids = [
     "${var.security_group_ids}"]
   subnet_id = "${var.subnet_id}"
-  iam_instance_profile = "${aws_iam_instance_profile.ecs_iam_profile.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.ecs_iam_profile.id}"
   user_data = <<EOF
 #!/bin/bash
 echo ECS_CLUSTER=${aws_ecs_cluster.ecs_cluster.name} >> /etc/ecs/ecs.config
@@ -24,7 +22,7 @@ EOF
 
 resource "aws_iam_instance_profile" "ecs_iam_profile" {
   name = "ecs_instance_role"
-  role = "${aws_iam_role.ecs_iam_role.name}"
+  role = "${aws_iam_role.ecs_iam_role.id}"
 }
 
 
@@ -71,7 +69,7 @@ resource "aws_iam_role" "ecs_iam_role" {
   {
     "Effect": "Allow",
     "Principal": {
-      "Service": "ecs.amazonaws.com"
+      "Service": "ec2.amazonaws.com"
     },
     "Action": "sts:AssumeRole"
   }
