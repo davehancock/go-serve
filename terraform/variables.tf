@@ -1,10 +1,5 @@
-
 variable "region" {
   default = "eu-west-1"
-}
-
-variable "ec2_region" {
-  default = "eu-west-1c"
 }
 
 variable "amis" {
@@ -18,7 +13,14 @@ variable "amis" {
   }
 }
 
-variable "key_name" {
+variable "availabilty_zones" {
+  type = "map"
+  default = {
+    "eu-west-1" = "eu-west-1a,eu-west-1b,eu-west-1c"
+  }
+}
+
+variable "ssh_key_name" {
   default = "dave-aws"
 }
 
@@ -26,10 +28,18 @@ variable "node_size" {
   default = "t2.nano"
 }
 
-variable "nodes" {
+variable "min_nodes" {
   default = 3
+}
+
+variable "max_nodes" {
+  default = 5
 }
 
 variable "cluster_name" {
   default = "test-cluster"
+}
+
+variable "cidr_block" {
+  default = "10.0.0.0/16"
 }

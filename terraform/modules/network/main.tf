@@ -1,35 +1,35 @@
-
 // Create a VPC to launch our instances into
-resource "aws_vpc" "default" {
-  cidr_block = "10.0.0.0/16"
+resource "aws_vpc" "ecs_vpc" {
+  cidr_block = "${var.cidr_block}"
 }
 
 // Create an internet gateway to give our subnet access to the outside world
 resource "aws_internet_gateway" "default" {
-  vpc_id = "${aws_vpc.default.id}"
+  vpc_id = "${aws_vpc.ecs_vpc.id}"
 }
 
 // Grant the VPC internet access on its main route table
 resource "aws_route" "internet_access" {
-  route_table_id = "${aws_vpc.default.main_route_table_id}"
+  route_table_id = "${aws_vpc.ecs_vpc.main_route_table_id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id = "${aws_internet_gateway.default.id}"
 }
 
-// Create a subnet to launch our instances into
-resource "aws_subnet" "default" {
-  vpc_id = "${aws_vpc.default.id}"
-  availability_zone = "${var.region}"
-  cidr_block = "10.0.1.0/24"
+// Create a subnet per AZ to launch our instances into (ALB requires at least 2, plus the more the better for high availability...)
+resource "aws_subnet" "ecs_subnet" {
+  vpc_id = "${aws_vpc.ecs_vpc.id}"
+  count = "${length(split(",", lookup(var.availabilty_zones, var.region)))}"
+  availability_zone = "${element(split(",", lookup(var.availabilty_zones, var.region)), count.index)}"
+  cidr_block = "${cidrsubnet(var.cidr_block, 4, count.index)}"
   map_public_ip_on_launch = true
 }
 
-// A security group for the ELB so it is accessible via the web
-resource "aws_security_group" "elb" {
+// A security group for the ALB so it is accessible via the web
+resource "aws_security_group" "alb" {
 
-  name = "elb-security-group"
-  vpc_id = "${aws_vpc.default.id}"
-  description = "ELB specific group"
+  name = "alb-security-group"
+  vpc_id = "${aws_vpc.ecs_vpc.id}"
+  description = "ALB specific group"
 
   // HTTP access from anywhere
   ingress {
@@ -40,26 +40,9 @@ resource "aws_security_group" "elb" {
       "0.0.0.0/0"]
   }
 
-  // TODO App Specific
-  ingress {
-    from_port = 8085
-    to_port = 8085
-    protocol = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"]
-  }
-
   ingress {
     from_port = 443
     to_port = 443
-    protocol = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 445
-    to_port = 445
     protocol = "tcp"
     cidr_blocks = [
       "0.0.0.0/0"]
@@ -79,7 +62,7 @@ resource "aws_security_group" "elb" {
 resource "aws_security_group" "ec2_default" {
 
   name = "ec2-security-group"
-  vpc_id = "${aws_vpc.default.id}"
+  vpc_id = "${aws_vpc.ecs_vpc.id}"
   description = "Default group for any EC2 instance"
 
   // SSH access from anywhere
@@ -88,7 +71,8 @@ resource "aws_security_group" "ec2_default" {
     to_port = 22
     protocol = "tcp"
     cidr_blocks = [
-      "0.0.0.0/0"]
+      "0.0.0.0/0"
+    ]
   }
 
   // HTTP access from the VPC
@@ -97,16 +81,8 @@ resource "aws_security_group" "ec2_default" {
     to_port = 80
     protocol = "tcp"
     cidr_blocks = [
-      "10.0.0.0/16"]
-  }
-
-  // TODO App Specific
-  ingress {
-    from_port = 8085
-    to_port = 8085
-    protocol = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"]
+      "${var.cidr_block}"
+    ]
   }
 
   ingress {
@@ -114,7 +90,8 @@ resource "aws_security_group" "ec2_default" {
     to_port = 443
     protocol = "tcp"
     cidr_blocks = [
-      "10.0.0.0/16"]
+      "${var.cidr_block}"
+    ]
   }
 
   // outbound internet access
@@ -123,51 +100,40 @@ resource "aws_security_group" "ec2_default" {
     to_port = 0
     protocol = "-1"
     cidr_blocks = [
-      "0.0.0.0/0"]
+      "0.0.0.0/0"
+    ]
   }
 }
 
 
-// Create Elastic Load Balancer for external access to the VPC
-resource "aws_elb" "elb_main" {
+// Create Application Load Balancer for external access to the VPC and internal routing to services using dynamic port allocation
+resource "aws_alb" "ecs_alb" {
 
-  name = "elb-main"
+  name = "ecs-alb"
 
   subnets = [
-    "${aws_subnet.default.id}"]
+    "${aws_subnet.ecs_subnet.*.id}"
+  ]
   security_groups = [
-    "${aws_security_group.elb.id}"]
-  instances = [
-    "${var.instance_ids}"]
+    "${aws_security_group.alb.id}"
+  ]
+}
 
-  listener {
-    instance_port = 80
-    instance_protocol = "tcp"
-    lb_port = 80
-    lb_protocol = "tcp"
+resource "aws_alb_target_group" "ecs_alb_tg" {
+  name     = "ecs-alb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = "${aws_vpc.ecs_vpc.id}"
+}
+
+
+resource "aws_alb_listener" "front_end" {
+  load_balancer_arn = "${aws_alb.ecs_alb.id}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_alb_target_group.ecs_alb_tg.id}"
+    type             = "forward"
   }
-
-  // TODO App Specific
-  listener {
-    instance_port = 8085
-    instance_protocol = "tcp"
-    lb_port = 8085
-    lb_protocol = "tcp"
-  }
-
-  listener {
-    instance_port = 443
-    instance_protocol = "tcp"
-    lb_port = 443
-    lb_protocol = "tcp"
-  }
-
-  health_check {
-    target = "TCP:7946"
-    healthy_threshold = 2
-    unhealthy_threshold = 8
-    interval = 15
-    timeout = 5
-  }
-
 }

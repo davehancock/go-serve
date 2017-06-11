@@ -1,0 +1,41 @@
+{
+  "family": "go-serve-task",
+  "taskRoleArn": "",
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "go-serve-container",
+      "image": "208780420864.dkr.ecr.eu-west-1.amazonaws.com/go-serve:latest",
+      "cpu": 0,
+      "memory": 256,
+      "memoryReservation": 256,
+      "links": [],
+      "portMappings": [
+        {
+          "containerPort": 8085,
+          "hostPort": 0,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "entryPoint": [],
+      "command": [],
+      "environment": [
+        {
+          "name": "SERVE_ENV",
+          "value": "aws1"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [ ],
+      "disableNetworking": false,
+      "privileged": true,
+      "readonlyRootFilesystem": true,
+      "dnsServers": [],
+      "dnsSearchDomains": [],
+      "extraHosts": [],
+      "dockerSecurityOptions": []
+    }
+  ],
+  "placementConstraints": []
+}

@@ -1,0 +1,18 @@
+{
+    "cluster": "test-cluster",
+    "serviceName": "go-serve-service",
+    "taskDefinition": "go-serve-task",
+    "loadBalancers": [
+      {
+        "targetGroupArn": "arn:aws:elasticloadbalancing:eu-west-1:208780420864:targetgroup/ecs-alb-tg/5619813ac3706a04",
+        "containerName": "go-serve-container",
+        "containerPort": 8085
+      }
+    ],
+    "desiredCount": 3,
+    "role": "ecs_iam",
+    "deploymentConfiguration": {
+        "maximumPercent": 150,
+        "minimumHealthyPercent": 67
+    }
+}

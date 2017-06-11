@@ -1,6 +1,9 @@
 variable "region" {
 }
 
-variable "instance_ids" {
-  type = "list"
+variable "availabilty_zones" {
+  type = "map"
+}
+
+variable "cidr_block" {
 }

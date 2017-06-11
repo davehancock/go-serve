@@ -1,6 +1,6 @@
 FROM scratch
 
-COPY ./build/go-serve /go/bin/go-serve
+COPY ./build/app /go/bin/go-serve
 
 EXPOSE 8085
 

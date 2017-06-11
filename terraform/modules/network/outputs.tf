@@ -4,6 +4,6 @@ output "security_group_ids" {
   ]
 }
 
-output "subnet_id" {
-  value = "${aws_subnet.default.id}"
+output "vpc_subnet_ids" {
+  value = "${aws_subnet.ecs_subnet.*.id}"
 }
