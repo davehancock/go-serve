@@ -7,8 +7,8 @@
       "name": "go-serve-container",
       "image": "208780420864.dkr.ecr.eu-west-1.amazonaws.com/go-serve:latest",
       "cpu": 0,
-      "memory": 256,
-      "memoryReservation": 256,
+      "memory": 30,
+      "memoryReservation": 30,
       "links": [],
       "portMappings": [
         {

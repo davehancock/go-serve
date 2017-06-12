@@ -75,20 +75,10 @@ resource "aws_security_group" "ec2_default" {
     ]
   }
 
-  // HTTP access from the VPC
   ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
-    cidr_blocks = [
-      "${var.cidr_block}"
-    ]
-  }
-
-  ingress {
-    from_port = 443
-    to_port = 443
-    protocol = "tcp"
+    protocol  = "tcp"
+    from_port = 32768
+    to_port   = 61000
     cidr_blocks = [
       "${var.cidr_block}"
     ]

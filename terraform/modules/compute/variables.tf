@@ -31,3 +31,6 @@ variable "max_nodes" {
 
 variable "cluster_name" {
 }
+
+variable "ec2_iam_profile_id" {
+}

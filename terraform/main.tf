@@ -2,6 +2,10 @@ provider "aws" {
   region = "${var.region}"
 }
 
+module "iam" {
+  source = "./modules/iam"
+}
+
 module "compute" {
   source = "./modules/compute"
   region = "${var.region}"
@@ -14,6 +18,7 @@ module "compute" {
   vpc_subnet_ids = "${module.network.vpc_subnet_ids}"
   security_group_ids = "${module.network.security_group_ids}"
   cluster_name = "${var.cluster_name}"
+  ec2_iam_profile_id = "${module.iam.ec2_iam_profile_id}"
 }
 
 module "network" {

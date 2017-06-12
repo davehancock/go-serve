@@ -8,21 +8,22 @@ import (
 )
 
 const port = ":8085"
-const version = "1.3"
+const version = "1.4.1"
 
 func main() {
 
 	fmt.Println("Starting go-serve...")
 
-	http.HandleFunc("/stuff", handleStuff)
+	http.HandleFunc("/", handleStuff)
 	http.ListenAndServe(port, nil)
 }
 
 func handleStuff(w http.ResponseWriter, r *http.Request) {
 
-	var content = "Current version is: " + version + ", " +
-		"App Env: " + os.Getenv("SERVE_ENV") + ", " +
-		"Running on host: " + resolveHostname()
+	var content = "Current version is: " + version + "\n" +
+		"App Env: " + os.Getenv("SERVE_ENV") + "\n" +
+		"Running on host: " + resolveHostname() + "\n" +
+		"Within Availabilty Zone: " + resolveAvailabilityZone()
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(content))
@@ -30,8 +31,16 @@ func handleStuff(w http.ResponseWriter, r *http.Request) {
 
 // Mini hack to get hostname from EC2 Instance Metadata from within a container, just to demonstrate
 func resolveHostname() string {
+	return retrieveMetaData("/hostname")
+}
 
-	resp, err := http.Get("http://169.254.169.254/latest/meta-data/hostname")
+func resolveAvailabilityZone() string {
+	return retrieveMetaData("/placement/availability-zone/")
+}
+
+func retrieveMetaData(path string) string {
+
+	resp, err := http.Get("http://169.254.169.254/latest/meta-data" + path)
 	if err != nil {
 		fmt.Println("error reaching metadata service: " + err.Error())
 		return "Unknown"
@@ -44,8 +53,10 @@ func resolveHostname() string {
 		return "Unknown"
 	}
 
-	resolvedHostname := string(hostname)
-	fmt.Println("Resolved Hostname was: " + resolvedHostname)
+	resolvedMetadataValue := string(hostname)
+	fmt.Println("Resolved metadata value was: " + resolvedMetadataValue)
 
-	return resolvedHostname
+	return resolvedMetadataValue
+
+	//http://169.254.169.254/latest/meta-data/placement/availability-zone/
 }
